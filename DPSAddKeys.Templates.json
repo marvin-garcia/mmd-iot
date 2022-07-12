@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
   "parameters": {
     "resourceGroup": {
@@ -9,7 +9,8 @@
       "type": "string"
     },
     "location": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
     },
     "keyType": {
       "type": "string"
@@ -43,136 +44,118 @@
     }
   },
   "variables": {
+    "dpsApiVersion": "2022-02-05",
     "keyVaultApiVersion": "2015-06-01",
-    "tags": {
+    "commonTags": {
       "Stamp": "[parameters('stampName')]",
       "Environment": "[parameters('envName')]",
       "OwningTeam": "[parameters('owningTeam')]",
-      "Build": "[parameters('version')]"
+      "Build": "[parameters('version')]",
+      "ResourceID": "[concat('DPS:', parameters('name'))]"
+    },
+    "ownerPrimaryKeyTags": {
+      "Description": "Stores Primary owner key for DPS",
+      "UsageType": "PrimaryKey",
+      "SecretType": "Key",
+      "KeyType": "Primary",
+      "AuthRule": "Owner"
+    },
+    "ownerSecondaryKeyTags": {
+      "Description": "Stores Secondary owner key for DPS",
+      "UsageType": "SecondaryKey",
+      "SecretType": "Key",
+      "KeyType": "Secondary",
+      "AuthRule": "Owner"
+    },
+    "ownerSecondaryConnectionStringTags": {
+      "Description": "Stores Secondary owner connection string for DPS",
+      "UsageType": "SecondaryConnectionString",
+      "SecretType": "ConnectionString",
+      "KeyType": "Secondary",
+      "AuthRule": "Owner"
+    },
+    "ownerPrimaryConnectionStringTags": {
+      "Description": "Stores Primary owner connection string for DPS",
+      "UsageType": "PrimaryConnectionString",
+      "SecretType": "ConnectionString",
+      "KeyType": "Secondary",
+      "AuthRule": "Owner"
+    },
+    "idScopeTags": {
+      "Description": "Stores IdScope for DPS",
+      "UsageType": "IdScope",
+      "SecretType": "IdScope",
+      "KeyType": "IdScope"
     }
   },
   "resources": [
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerPrimaryKey')]",
       "apiVersion": "[variables('keyVaultApiVersion')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerPrimaryKey')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('commonTags'), variables('ownerPrimaryKeyTags'))]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), '2020-03-01').primaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).primaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Primary owner key for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "UsageType": "PrimaryKey",
-        "SecretType": "Key",
-        "KeyType": "Primary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerSecondaryKey')]",
-      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('ownerSecondaryKeyTags')]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), '2020-03-01').secondaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).secondaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Primary owner key for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "UsageType": "PrimaryKey",
-        "SecretType": "Key",
-        "KeyType": "Primary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerSecondaryConnectionString')]",
-      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('ownerSecondaryConnectionStringTags')]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), '2020-03-01').secondaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).secondaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Secondary owner key for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "UsageType": "SecondaryConnectionString",
-        "SecretType": "ConnectionString",
-        "KeyType": "Secondary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerPrimaryConnectionString')]",
-      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "location": "[parameters('location')]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), '2020-03-01').primaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).primaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
         }
       },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Primary owner key for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "UsageType": "PrimaryConnectionString",
-        "SecretType": "ConnectionString",
-        "KeyType": "Secondary",
-        "AuthRule": "Owner"
-      }
+      "tags": "[variables('ownerprimaryConnectionStringTags')]"
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-IdScope')]",
       "apiVersion": "[variables('keyVaultApiVersion')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-IdScope')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('idScopeTags')]",
       "properties": {
         "value": "[parameters('dpsIdScope')]",
         "attributes": {
           "enabled": true
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores IdScope for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "UsageType": "IdScope",
-        "SecretType": "IdScope",
-        "KeyType": "IdScope"
       }
     }
   ]

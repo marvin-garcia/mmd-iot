@@ -1,12 +1,13 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
   "parameters": {
     "name": {
       "type": "string"
     },
     "location": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
     },
     "resourceGroup": {
       "type": "string"
@@ -40,114 +41,99 @@
     }
   },
   "variables": {
-    "iotVersion": "2020-08-01",
+    "iotHubApiVersion": "2021-07-02",
     "keyVaultApiVersion": "2015-06-01",
-    "tags": {
+    "commonTags": {
       "Stamp": "[parameters('stampName')]",
       "Environment": "[parameters('envName')]",
       "OwningTeam": "[parameters('owningTeam')]",
-      "Build": "[parameters('version')]"
+      "Build": "[parameters('version')]",
+      "ResourceID": "[concat('IoTHub:', parameters('name'))]"
+    },
+    "primaryKeyTags": {
+      "Description": "Stores Primary owner key for IoTHub",
+      "UsageType": "PrimaryKey",
+      "SecretType": "Key",
+      "KeyType": "Primary",
+      "AuthRule": "Owner"
+    },
+    "secondaryKeyTags": {
+      "Description": "Stores Secondary owner key for IoTHub",
+      "UsageType": "SecondaryKey",
+      "SecretType": "Key",
+      "KeyType": "Secondary",
+      "AuthRule": "Owner"
+    },
+    "primaryConnectionStringTags": {
+      "Description": "Stores Primary owner key for IoTHub",
+      "UsageType": "PrimaryConnectionString",
+      "SecretType": "ConnectionString",
+      "KeyType": "Primary",
+      "AuthRule": "Owner"
+    },
+    "secondaryConnectionStringTags": {
+      "Description": "Stores Secondary owner key for IoTHub",
+      "UsageType": "SecondaryConnectionString",
+      "SecretType": "ConnectionString",
+      "KeyType": "Secondary",
+      "AuthRule": "Owner"
     }
   },
   "resources": [
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-PrimaryKey')]",
-      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('commonTags'), variables('primaryKeyTags'))]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), '2020-03-01').primaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).primaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Primary owner key for IoTHub",
-        "ResourceID": "[concat('IoTHub:', parameters('name'))]",
-        "UsageType": "PrimaryKey",
-        "SecretType": "Key",
-        "KeyType": "Primary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-SecondaryKey')]",
-      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('commonTags'), variables('secondaryKeyTags'))]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), '2020-03-01').secondaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).secondaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Secondary owner key for IoTHub",
-        "ResourceID": "[concat('IoTHub:', parameters('name'))]",
-        "UsageType": "SecondaryKey",
-        "SecretType": "Key",
-        "KeyType": "Secondary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-PrimaryConnectionString')]",
       "apiVersion": "[variables('keyVaultApiVersion')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-PrimaryConnectionString')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('commonTags'), variables('primaryConnectionStringTags'))]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), '2020-03-01').primaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).primaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Primary owner key for IoTHub",
-        "ResourceID": "[concat('IoTHub:', parameters('name'))]",
-        "UsageType": "PrimaryConnectionString",
-        "SecretType": "ConnectionString",
-        "KeyType": "Primary",
-        "AuthRule": "Owner"
       }
     },
     {
-      "location": "[resourceGroup().location]",
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-SecondaryConnectionString')]",
       "apiVersion": "[variables('keyVaultApiVersion')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-SecondaryConnectionString')]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('commonTags'), variables('secondaryConnectionStringTags'))]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), '2020-03-01').secondaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).secondaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
         }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores Secondary owner key for IoTHub",
-        "ResourceID": "[concat('IoTHub:', parameters('name'))]",
-        "UsageType": "SecondaryConnectionString",
-        "SecretType": "ConnectionString",
-        "KeyType": "Secondary",
-        "AuthRule": "Owner"
       }
     }
   ]
