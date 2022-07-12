@@ -1,0 +1,131 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
+  "parameters": {
+    "resourceGroup": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string"
+    },
+    "capacity": {
+      "type": "int"
+    },
+    "keyVaultName": {
+      "type": "string"
+    },
+    "iotHubName": {
+      "type": "string"
+    },
+    "iotHubKeyName": {
+      "type": "string"
+    },
+    "iotHubSuffix": {
+      "type": "string"
+    },
+    "envName": {
+      "type": "string"
+    },
+    "stampName": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "owningTeam": {
+      "type": "string"
+    },
+    "expiry": {
+      "type": "int"
+    },
+    "diagnosticSettings": {
+      "type": "object",
+      "defaultValue": {}
+    }
+  },
+  "variables": {
+    "keyVaultApiVersion": "2015-06-01",
+    "tags": {
+      "Stamp": "[parameters('stampName')]",
+      "Environment": "[parameters('envName')]",
+      "OwningTeam": "[parameters('owningTeam')]",
+      "Build": "[parameters('version')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Devices/provisioningServices",
+      "apiVersion": "2020-03-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('sku')]",
+        "tier": "[parameters('tier')]",
+        "capacity": "[parameters('capacity')]"
+      },
+      "properties": {
+        "iotHubs": [
+          {
+            "connectionString": "[concat('HostName=',  parameters('iotHubName'), parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), parameters('iotHubKeyName')), '2020-03-01').primaryKey)]",
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('iotHubName'), parameters('iotHubSuffix'))]"
+          }
+        ]
+      },
+      "tags": "[variables('tags')]"
+    },
+    {
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-IdScope')]",
+      "apiVersion": "[variables('keyVaultApiVersion')]",
+      "properties": {
+        "value": "[reference(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices', parameters('name')), '2020-03-01').idScope]",
+        "attributes": {
+          "enabled": true,
+          "exp": "[int(parameters('Expiry'))]"
+        }
+      },
+      "tags": {
+        "Stamp": "[parameters('stampName')]",
+        "Environment": "[parameters('envName')]",
+        "OwningTeam": "[parameters('owningTeam')]",
+        "Build": "[parameters('version')]",
+        "Description": "Stores IDScope for DPS",
+        "ResourceID": "[concat('DPS:', parameters('name'))]",
+        "SecretType": "IDScope"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Devices/ProvisioningServices/',parameters('name'))]"
+      ]
+    },
+    {
+      "condition": "[not(empty(parameters('diagnosticSettings')))]",
+      "type": "Microsoft.Devices/ProvisioningServices/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "name": "[concat(parameters('name'), '/microsoft.insights/DiagnosticSettings')]",
+      "dependsOn": [
+        "[parameters('name')]"
+      ],
+      "properties": {
+        "eventHubAuthorizationRuleId": "[concat('/subscriptions/', parameters('diagnosticSettings').SubscriptionId, '/resourceGroups/', parameters('diagnosticSettings').ResourceGroup, '/providers/Microsoft.EventHub/namespaces/', parameters('diagnosticSettings').EventHubNamespace, '/authorizationrules/RootManageSharedAccessKey')]",
+        "eventHubName": "[parameters('diagnosticSettings').EventHub]",
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      }
+    }
+  ]
+}
