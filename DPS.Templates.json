@@ -111,31 +111,6 @@
       }
     },
     {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "[variables('keyVaultSecretApiVersion')]",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-IdScope')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "value": "[reference(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices', parameters('name')), '2022-02-05').idScope]",
-        "attributes": {
-          "enabled": true,
-          "exp": "[int(parameters('Expiry'))]"
-        }
-      },
-      "tags": {
-        "Stamp": "[parameters('stampName')]",
-        "Environment": "[parameters('envName')]",
-        "OwningTeam": "[parameters('owningTeam')]",
-        "Build": "[parameters('version')]",
-        "Description": "Stores IDScope for DPS",
-        "ResourceID": "[concat('DPS:', parameters('name'))]",
-        "SecretType": "IDScope"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Devices/ProvisioningServices/',parameters('name'))]"
-      ]
-    },
-    {
       "condition": "[not(empty(parameters('diagnosticSettings')))]",
       "type": "Microsoft.Devices/ProvisioningServices/providers/diagnosticSettings",
       "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
