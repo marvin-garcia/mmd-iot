@@ -2,9 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
   "parameters": {
-    "resourceGroup": {
-      "type": "string"
-    },
     "name": {
       "type": "string"
     },
@@ -16,9 +13,6 @@
     },
     "capacity": {
       "type": "int"
-    },
-    "keyVaultName": {
-      "type": "string"
     },
     "iotHubNames": {
       "type": "array"
@@ -48,9 +42,6 @@
     "owningTeam": {
       "type": "string"
     },
-    "expiry": {
-      "type": "int"
-    },
     "diagnosticSettings": {
       "type": "object",
       "defaultValue": {}
@@ -59,7 +50,6 @@
   "variables": {
     "nestedDeploymentApiVersion": "2021-04-01",
     "dpsApiVersion": "2022-02-05",
-    "keyVaultSecretApiVersion": "2021-11-01-preview",
     "diagnosticSettingsApiVersion": "2021-05-01-preview",
     "tags": {
       "Stamp": "[parameters('stampName')]",
@@ -74,7 +64,7 @@
       "apiVersion": "[variables('nestedDeploymentApiVersion')]",
       "name": "iotHubObjectsDeployment",
       "copy": {
-        "name": "iotHubObject",
+        "name": "iothubscopy",
         "count": "[length(parameters('iotHubNames'))]"
       },
       "properties": {
@@ -88,8 +78,8 @@
               "type": "secureObject",
               "value": {
                 "name": "[concat(parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'))]",
-                "connectionString": "[concat('HostName=',  parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubNames')[copyIndex()], parameters('iotHubKeyName')), '2020-03-01').primaryKey)]",
-                "location": "[reference(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs', parameters('iotHubNames')[copyIndex()])).location]"
+                "connectionString": "[concat('HostName=',  parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubNames')[copyIndex()], parameters('iotHubKeyName')), '2020-03-01').primaryKey)]",
+                "location": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('iotHubNames')[copyIndex()])).location]"
               }
             }
           }
