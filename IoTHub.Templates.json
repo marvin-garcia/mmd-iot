@@ -220,5 +220,15 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs": {
+    "iotHubName": {
+      "type": "string",
+      "value": "[parameters('name')]"
+    },
+    "iotHubResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Devices/IotHubs', parameters('name'))]"
+    }
+  }
 }
