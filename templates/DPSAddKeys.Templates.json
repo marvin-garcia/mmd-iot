@@ -27,9 +27,6 @@
     "dpsSuffix": {
       "type": "string"
     },
-    "dpsIdScope": {
-      "type": "securestring"
-    },
     "envName": {
       "type": "string"
     },
@@ -152,7 +149,7 @@
       "location": "[parameters('location')]",
       "tags": "[variables('idScopeTags')]",
       "properties": {
-        "value": "[parameters('dpsIdScope')]",
+        "value": "[reference(resourceId('Microsoft.Devices/ProvisioningServices', parameters('name')), variables('dpsApiVersion'), 'Full').idScope]",
         "attributes": {
           "enabled": true
         }
