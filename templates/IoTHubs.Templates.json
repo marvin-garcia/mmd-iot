@@ -57,11 +57,23 @@
     "messageEventHubName": {
       "type": "string"
     },
+    "messsageEventHubAuthorizationRuleName": {
+      "type": "string",
+      "defaultValue": "Send"
+    },
     "lifeCycleEventHubName": {
       "type": "string"
     },
+    "lifecycleEventHubAuthorizationRuleName": {
+      "type": "string",
+      "defaultValue": "Send"
+    },
     "twinEventHubName": {
       "type": "string"
+    },
+    "twinEventHubAuthorizationRuleName": {
+      "type": "string",
+      "defaultValue": "Send"
     },
     "envName": {
       "type": "string"
@@ -123,19 +135,19 @@
           "endpoints": {
             "eventHubs": [
               {
-                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('messageEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('messageEventHubName'), parameters('messsageEventHubAuthorizationRuleName')), variables('eventHubApiVersion')).primaryConnectionString]",
                 "name": "allMessageRouting",
                 "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
                 "resourceGroup": "[parameters('eventHubResourceGroup')]"
               },
               {
-                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('twinEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('twinEventHubName'), parameters('twinEventHubAuthorizationRuleName')), variables('eventHubApiVersion')).primaryConnectionString]",
                 "name": "allTwinUpdateRouting",
                 "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
                 "resourceGroup": "[parameters('eventHubResourceGroup')]"
               },
               {
-                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('lifeCycleEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('lifeCycleEventHubName'), parameters('lifecycleEventHubAuthorizationRuleName')), variables('eventHubApiVersion')).primaryConnectionString]",
                 "name": "allLifecycleRouting",
                 "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
                 "resourceGroup": "[parameters('eventHubResourceGroup')]"
