@@ -78,7 +78,7 @@
           "resources": [],
           "outputs": {
             "iotHubObjects": {
-              "type": "secureObject",
+              "type": "array",
               "copy": {
                 "count": "[length(parameters('iotHubNames'))]",
                 "input": {
