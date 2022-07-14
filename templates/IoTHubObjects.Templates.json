@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "iotHubNames": {
+      "type": "array"
+    },
+    "iotHubKeyName": {
+      "type": "string",
+      "defaultValue": "iothubowner"
+    },
+    "iotHubSuffix": {
+      "type": "string",
+      "allowedValues": [
+        ".azure-devices.net",
+        ".azure-devices.us",
+        ".azure-devices.cn"
+      ],
+      "defaultValue": ".azure-devices.net"
+    }
+  },
+  "variables": {
+    "iotHubApiVersion": "2021-07-02"
+  },
+  "resources": [],
+  "outputs": {
+    "iotHubObjects": {
+      "type": "array",
+      "copy": {
+        "count": "[length(parameters('iotHubNames'))]",
+        "input": {
+          "connectionString": "[concat('HostName=',  parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubNames')[copyIndex()], parameters('iotHubKeyName')), variables('iotHubApiVersion')).primaryKey)]",
+          "location": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('iotHubNames')[copyIndex()]), variables('iotHubApiVersion'), 'Full').location]"
+        }
+      }
+    }
+  }
+}
