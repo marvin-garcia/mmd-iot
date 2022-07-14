@@ -133,5 +133,11 @@
     //     ]
     //   }
     // }
-  ]
+  ],
+  "outputs": {
+    "iotHubObjects": {
+      "type": "array",
+      "value": "[reference('iotHubObjectsDeployment').outputs.iotHubObjects.value]"
+    }
+  }
 }
