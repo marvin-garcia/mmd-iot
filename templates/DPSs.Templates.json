@@ -2,14 +2,8 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "namePrefix": {
-      "type": "string"
-    },
-    "count": {
-      "type": "int"
-    },
-    "startIndex": {
-      "type": "int"
+    "names": {
+      "type": "array"
     },
     "location": {
       "type": "string"
@@ -43,7 +37,6 @@
   "variables": {
     "nestedDeploymentApiVersion": "2021-04-01",
     "dpsApiVersion": "2022-02-05",
-    "iotHubApiVersion": "2021-07-02",
     "diagnosticSettingsApiVersion": "2021-05-01-preview",
     "tags": {
       "Stamp": "[parameters('stampName')]",
@@ -58,9 +51,9 @@
       "apiVersion": "[variables('dpsApiVersion')]",
       "copy": {
         "name": "dpscopy",
-        "count": "[parameters('count')]"
+        "count": "[length(parameters('names'))]"
       },
-      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]",
+      "name": "[parameters('names')[copyIndex()]]",
       "location": "[parameters('location')]",
       "tags": "[variables('tags')]",
       "sku": {
@@ -77,11 +70,11 @@
       "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
       "copy": {
         "name": "dpsdiagnosticscopy",
-        "count": "[parameters('count')]"
+        "count": "[length(parameters('names'))]"
       },
-      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()), '/microsoft.insights/DiagnosticSettings')]",
+      "name": "[concat(parameters('names')[copyIndex()], '/microsoft.insights/DiagnosticSettings')]",
       "dependsOn": [
-        "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
+        "[parameters('names')[copyIndex()]]"
       ],
       "properties": {
         "eventHubAuthorizationRuleId": "[concat('/subscriptions/', parameters('diagnosticSettings').SubscriptionId, '/resourceGroups/', parameters('diagnosticSettings').ResourceGroup, '/providers/Microsoft.EventHub/namespaces/', parameters('diagnosticSettings').EventHubNamespace, '/authorizationrules/RootManageSharedAccessKey')]",
