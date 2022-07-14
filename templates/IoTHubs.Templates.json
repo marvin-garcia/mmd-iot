@@ -2,14 +2,8 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "namePrefix": {
-      "type": "string"
-    },
-    "count": {
-      "type": "int"
-    },
-    "startIndex": {
-      "type": "int"
+    "names": {
+      "type": "array"
     },
     "location": {
       "type": "string"
@@ -111,9 +105,9 @@
       "apiVersion": "[variables('iotHubApiVersion')]",
       "copy": {
         "name": "iothubcopy",
-        "count": "[parameters('count')]"
+        "count": "[length(parameters('names'))]"
       },
-      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]",
+      "name": "[parameters('names')[copyIndex()]]",
       "location": "[parameters('location')]",
       "tags": "[variables('tags')]",
       "sku": {
@@ -229,11 +223,11 @@
       "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
       "copy": {
         "name": "iothubdiagnosticscopy",
-        "count": "[parameters('count')]"
+        "count": "[length(parameters('names'))]"
       },
-      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()), '/microsoft.insights/DiagnosticSettings')]",
+      "name": "[concat(parameters('names')[copyIndex()], '/microsoft.insights/DiagnosticSettings')]",
       "dependsOn": [
-        "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
+        "[parameters('names')[copyIndex()]]"
       ],
       "properties": {
         "eventHubAuthorizationRuleId": "[concat('/subscriptions/', parameters('diagnosticSettings').SubscriptionId, '/resourceGroups/', parameters('diagnosticSettings').ResourceGroup, '/providers/Microsoft.EventHub/namespaces/', parameters('diagnosticSettings').EventHubNamespace, '/authorizationrules/RootManageSharedAccessKey')]",
@@ -248,18 +242,11 @@
     }
   ],
   "outputs": {
-    "iotHubNames": {
-      "type": "array",
-      "copy": {
-        "count": "[parameters('count')]",
-        "input": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
-      }
-    },
     "iotHubResourceIds": {
       "type": "array",
       "copy": {
-        "count": "[parameters('count')]",
-        "input": "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex())))]"
+        "count": "[length(parameters('names'))]",
+        "input": "[resourceId('Microsoft.Devices/IotHubs', parameters('names')[copyIndex()])]"
       }
     }
   }
