@@ -1,0 +1,290 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
+  "parameters": {
+    "resourceGroup": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "int"
+    },
+    "existingDpsResourceIds": {
+      "type": "array"
+    },
+    "existingIoTHubNames": {
+      "type": "array"
+    },
+    "dpsNamePrefix": {
+      "type": "string"
+    },
+    "dpsSku": {
+      "type": "string"
+    },
+    "dpsCapacity": {
+      "type": "int"
+    },
+    "iotHubNamePrefix": {
+      "type": "string"
+    },
+    "iotHubSku": {
+      "type": "string"
+    },
+    "iotHubCapacity": {
+      "type": "int"
+    },
+    "iotHubIdentity": {
+      "type": "string",
+      "allowedValues": [
+        "None",
+        "UserAssigned",
+        "SystemAssigned"
+      ],
+      "defaultValue": "none"
+    },
+    "iotHubUserAssignedIdentities": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "iotHubPartitionCount": {
+      "type": "int"
+    },
+    "iotHubRetentionInDays": {
+      "type": "int"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "containerName": {
+      "type": "string"
+    },
+    "eventhubSubscriptionId": {
+      "type": "string"
+    },
+    "eventHubResourceGroup": {
+      "type": "string"
+    },
+    "eventHubNamespace": {
+      "type": "string"
+    },
+    "messageEventHubName": {
+      "type": "string"
+    },
+    "lifeCycleEventHubName": {
+      "type": "string"
+    },
+    "twinEventHubName": {
+      "type": "string"
+    },
+    "iotHubDiagnosticSettings": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "iotHubSuffix": {
+      "type": "string",
+      "allowedValues": [
+        ".azure-devices.net",
+        ".azure-devices.us",
+        ".azure-devices.cn"
+      ],
+      "defaultValue": ".azure-devices.net"
+    },
+    "envName": {
+      "type": "string"
+    },
+    "stampName": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "owningTeam": {
+      "type": "string"
+    },
+    "expiry": {
+      "type": "int"
+    },
+    "dpsDiagnosticSettings": {
+      "type": "object",
+      "defaultValue": {}
+    }
+  },
+  "variables": {
+    "nestedDeploymentApiVersion": "2021-04-01",
+    "startIndex": "[add(length(parameters('existingIoTHubNames')), 1)]",
+    "iotHubsRelativePath": "[concat('IoTHubs.Templates.json')]",
+    "iotHubsKeysRelativePath": "[concat('IoTHubAddKeys.Templates.json')]",
+    "dpsRelativePath": "[concat('DPSs.Templates.json')]",
+    "dpsKeysRelativePath": "[concat('DPSAddKeys.Templates.json')]"
+    // "iotHubsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/IoTHub.Templates.json')]",
+    // "iotHubsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/IoTHubAddKeys.Templates.json')]",
+    // "dpsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/DPS.Templates.json')]",
+    // "dpsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/DPSAddKeys.Templates.json')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('nestedDeploymentApiVersion')]",
+      "name": "IoTHubsDeployment",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          // "uri": "[variables('iotHubsTemplateUrl')]",
+          "relativePath": "[variables('iotHubsRelativePath')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "namePrefix": {
+            "value": "[parameters('iotHubNamePrefix')]"
+          },
+          "count": {
+            "value": "[parameters('instanceCount')]"
+          },
+          "startIndex": {
+            "value": "[variables('startIndex')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sku": {
+            "value": "[parameters('iotHubSku')]"
+          },
+          "capacity": {
+            "value": "[parameters('iotHubCapacity')]"
+          },
+          "identity": {
+            "value": "[parameters('iotHubIdentity')]"
+          },
+          "userAssignedIdentities": {
+            "value": "[parameters('iotHubUserAssignedIdentities')]"
+          },
+          "partitionCount": {
+            "value": "[parameters('iotHubPartitionCount')]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('iotHubRetentionInDays')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('storageAccountName')]"
+          },
+          "containerName": {
+            "value": "[parameters('containerName')]"
+          },
+          "eventhubSubscriptionId": {
+            "value": "[parameters('eventhubSubscriptionId')]"
+          },
+          "eventHubResourceGroup": {
+            "value": "[parameters('eventHubResourceGroup')]"
+          },
+          "eventHubNamespace": {
+            "value": "[parameters('eventHubNamespace')]"
+          },
+          "messageEventHubName": {
+            "value": "[parameters('messageEventHubName')]"
+          },
+          "lifeCycleEventHubName": {
+            "value": "[parameters('lifeCycleEventHubName')]"
+          },
+          "twinEventHubName": {
+            "value": "[parameters('twinEventHubName')]"
+          },
+          "envName": {
+            "value": "[parameters('envName')]"
+          },
+          "stampName": {
+            "value": "[parameters('stampName')]"
+          },
+          "version": {
+            "value": "[parameters('version')]"
+          },
+          "owningTeam": {
+            "value": "[parameters('owningTeam')]"
+          },
+          "diagnosticSettings": {
+            "value": "[parameters('iotHubDiagnosticSettings')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('nestedDeploymentApiVersion')]",
+      "name": "iotHubNamesDeployment",
+      "dependsOn": [
+        "IoTHubsDeployment"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [],
+          "outputs": {
+            "iotHubObjects": {
+              "type": "array",
+              "value": "[concat(parameters('existingIoTHubNames'), reference('IoTHubsDeployment').outputs.iotHubNames)]"
+            }
+          }
+        }
+      }
+    },
+
+
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('nestedDeploymentApiVersion')]",
+      "name": "dpsDeployment",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          // "uri": "[variables('iotHubsTemplateUrl')]",
+          "relativePath": "[variables('dpsRelativePath')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "namePrefix": {
+            "value": "[parameters('dpsNamePrefix')]"
+          },
+          "count": {
+            "value": "[parameters('instanceCount')]"
+          },
+          "startIndex": {
+            "value": "[variables('startIndex')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sku": {
+            "value": "[parameters('dpsSku')]"
+          },
+          "capacity": {
+            "value": "[parameters('dpsCapacity')]"
+          },
+          "iotHubNames": {
+            "value": "[reference('iotHubNamesDeployment').outputs.iotHubObjects]"
+          },
+          "iotHubSuffix": {
+            "value": "[parameters('iotHubSuffix')]"
+          },
+          "envName": {
+            "value": "[parameters('envName')]"
+          },
+          "stampName": {
+            "value": "[parameters('stampName')]"
+          },
+          "version": {
+            "value": "[parameters('version')]"
+          },
+          "owningTeam": {
+            "value": "[parameters('owningTeam')]"
+          },
+          "diagnosticSettings": {
+            "value": "[parameters('iotHubDiagnosticSettings')]"
+          }
+        }
+      }
+    }
+  ]
+}

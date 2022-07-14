@@ -2,8 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
   "parameters": {
-    "name": {
+    "namePrefix": {
       "type": "string"
+    },
+    "count": {
+      "type": "int"
+    },
+    "startIndex": {
+      "type": "int"
     },
     "location": {
       "type": "string"
@@ -24,9 +30,9 @@
     "iotHubSuffix": {
       "type": "string",
       "allowedValues": [
-        "azure-devices.net",
-        "azure-devices.us",
-        "azure-devices.cn"
+        ".azure-devices.net",
+        ".azure-devices.us",
+        ".azure-devices.cn"
       ],
       "defaultValue": ".azure-devices.net"
     },
@@ -64,7 +70,8 @@
       "apiVersion": "[variables('nestedDeploymentApiVersion')]",
       "name": "iotHubObjectsDeployment",
       "copy": {
-        "name": "iothubscopy",
+        "name": "iotHubsLoop",
+        "mode": "parallel",
         "count": "[length(parameters('iotHubNames'))]"
       },
       "properties": {
@@ -89,7 +96,11 @@
     {
       "type": "Microsoft.Devices/provisioningServices",
       "apiVersion": "[variables('dpsApiVersion')]",
-      "name": "[parameters('name')]",
+      "copy": {
+        "name": "dpscopy",
+        "count": "[length(parameters('count'))]"
+      },
+      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]",
       "location": "[parameters('location')]",
       "tags": "[variables('tags')]",
       "sku": {
@@ -104,9 +115,13 @@
       "condition": "[not(empty(parameters('diagnosticSettings')))]",
       "type": "Microsoft.Devices/ProvisioningServices/providers/diagnosticSettings",
       "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
-      "name": "[concat(parameters('name'), '/microsoft.insights/DiagnosticSettings')]",
+      "copy": {
+        "name": "dpsdiagnosticscopy",
+        "count": "[length(parameters('count'))]"
+      },
+      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()), '/microsoft.insights/DiagnosticSettings')]",
       "dependsOn": [
-        "[parameters('name')]"
+        "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
       ],
       "properties": {
         "eventHubAuthorizationRuleId": "[concat('/subscriptions/', parameters('diagnosticSettings').SubscriptionId, '/resourceGroups/', parameters('diagnosticSettings').ResourceGroup, '/providers/Microsoft.EventHub/namespaces/', parameters('diagnosticSettings').EventHubNamespace, '/authorizationrules/RootManageSharedAccessKey')]",

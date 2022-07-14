@@ -1,0 +1,254 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
+  "parameters": {
+    "namePrefix": {
+      "type": "string"
+    },
+    "count": {
+      "type": "int"
+    },
+    "startIndex": {
+      "type": "int"
+    },
+    "location": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "capacity": {
+      "type": "int"
+    },
+    "identity": {
+      "type": "string",
+      "allowedValues": [
+        "None",
+        "UserAssigned",
+        "SystemAssigned"
+      ],
+      "defaultValue": "none"
+    },
+    "userAssignedIdentities": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "partitionCount": {
+      "type": "int"
+    },
+    "retentionInDays": {
+      "type": "int"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "containerName": {
+      "type": "string"
+    },
+    "eventhubSubscriptionId": {
+      "type": "string"
+    },
+    "eventHubResourceGroup": {
+      "type": "string"
+    },
+    "eventHubNamespace": {
+      "type": "string"
+    },
+    "messageEventHubName": {
+      "type": "string"
+    },
+    "lifeCycleEventHubName": {
+      "type": "string"
+    },
+    "twinEventHubName": {
+      "type": "string"
+    },
+    "envName": {
+      "type": "string"
+    },
+    "stampName": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "owningTeam": {
+      "type": "string"
+    },
+    "diagnosticSettings": {
+      "type": "object",
+      "defaultValue": {}
+    }
+  },
+  "variables": {
+    "eventHubApiVersion": "2017-04-01",
+    "iotHubApiVersion": "2021-07-02",
+    "storageAccountApiVersion": "2019-06-01",
+    "keyVaultApiVersion": "2015-06-01",
+    "diagnosticSettingsApiVersion": "2021-05-01-preview",
+    "tags": {
+      "Stamp": "[parameters('stampName')]",
+      "Environment": "[parameters('envName')]",
+      "OwningTeam": "[parameters('owningTeam')]",
+      "Build": "[parameters('version')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "[variables('iotHubApiVersion')]",
+      "copy": {
+        "name": "iothubcopy",
+        "count": "[parameters('count')]"
+      },
+      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "sku": {
+        "name": "[parameters('sku')]",
+        "capacity": "[parameters('capacity')]"
+      },
+      "identity": {
+        "type": "[parameters('identity')]",
+        "userAssignedIdentities": "[parameters('userAssignedIdentities')]"
+      },
+      "properties": {
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": "[parameters('retentionInDays')]",
+            "partitionCount": "[parameters('partitionCount')]"
+          }
+        },
+        "routing": {
+          "endpoints": {
+            "eventHubs": [
+              {
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('messageEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "name": "allMessageRouting",
+                "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
+                "resourceGroup": "[parameters('eventHubResourceGroup')]"
+              },
+              {
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('twinEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "name": "allTwinUpdateRouting",
+                "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
+                "resourceGroup": "[parameters('eventHubResourceGroup')]"
+              },
+              {
+                "connectionString": "[listKeys(resourceId(parameters('eventHubSubscriptionId'), parameters('eventHubResourceGroup'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), parameters('lifeCycleEventHubName'), 'Send'), variables('eventHubApiVersion')).primaryConnectionString]",
+                "name": "allLifecycleRouting",
+                "susbcriptionId": "[parameters('eventHubSubscriptionId')]",
+                "resourceGroup": "[parameters('eventHubResourceGroup')]"
+              }
+            ],
+            "serviceBusQueues": [],
+            "serviceBusTopics": [],
+            "storageContainers": []
+          },
+          "routes": [
+            {
+              "name": "allMessageRouting",
+              "source": "DeviceMessages",
+              "condition": "true",
+              "endpointNames": [
+                "allMessageRouting"
+              ],
+              "isEnabled": true
+            },
+            {
+              "name": "allLifecycleRouting",
+              "source": "DeviceLifecycleEvents",
+              "condition": "true",
+              "endpointNames": [
+                "allLifecycleRouting"
+              ],
+              "isEnabled": true
+            },
+            {
+              "name": "twinChangeEvents",
+              "source": "TwinChangeEvents",
+              "condition": "true",
+              "endpointNames": [
+                "allTwinUpdateRouting"
+              ],
+              "isEnabled": true
+            }
+          ],
+          "fallbackRoute": {
+            "name": "$fallback",
+            "source": "DeviceMessages",
+            "condition": "true",
+            "endpointNames": [
+              "events"
+            ],
+            "isEnabled": true
+          }
+        },
+        "storageEndpoints": {
+          "$default": {
+            "sasTtlAsIso8601": "PT7H",
+            "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), variables('storageAccountApiVersion')).keys[0].value)]",
+            "containerName": "[parameters('containerName')]"
+          }
+        },
+        "messagingEndpoints": {
+          "fileNotifications": {
+            "lockDurationAsIso8601": "PT1M",
+            "ttlAsIso8601": "PT10H",
+            "maxDeliveryCount": 10
+          }
+        },
+        "enableFileUploadNotifications": false,
+        "cloudToDevice": {
+          "maxDeliveryCount": 10,
+          "defaultTtlAsIso8601": "PT1H",
+          "feedback": {
+            "lockDurationAsIso8601": "PT1M",
+            "ttlAsIso8601": "PT1H",
+            "maxDeliveryCount": 10
+          }
+        },
+        "features": "None"
+      }
+    },
+    {
+      "condition": "[not(empty(parameters('diagnosticSettings')))]",
+      "type": "Microsoft.Devices/IotHubs/providers/diagnosticSettings",
+      "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
+      "copy": {
+        "name": "iothubdiagnosticscopy",
+        "count": "[parameters('count')]"
+      },
+      "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()), '/microsoft.insights/DiagnosticSettings')]",
+      "dependsOn": [
+        "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
+      ],
+      "properties": {
+        "eventHubAuthorizationRuleId": "[concat('/subscriptions/', parameters('diagnosticSettings').SubscriptionId, '/resourceGroups/', parameters('diagnosticSettings').ResourceGroup, '/providers/Microsoft.EventHub/namespaces/', parameters('diagnosticSettings').EventHubNamespace, '/authorizationrules/RootManageSharedAccessKey')]",
+        "eventHubName": "[parameters('diagnosticSettings').EventHub]",
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "iotHubNames": {
+      "type": "array",
+      "copy": {
+        "count": "[parameters('count')]",
+        "input": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
+      }
+    },
+    "iotHubresourceIds": {
+      "type": "array",
+      "copy": {
+        "count": "[parameters('count')]",
+        "input": "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex())))]"
+      }
+    }
+  }
+}

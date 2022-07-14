@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingIoTHubNames": {  
+      "type": "array"
+    },
+    "newIoTHubNames": {
+      "type": "array"
+    }
+  },
+  "resources": [],
+  "outputs": {
+    "iotHubObjects": {
+      "type": "array",
+      "value": "[concat(parameters('existingIoTHubNames'), parameters('newIoTHubNames'))]"
+    }
+  }
+}
