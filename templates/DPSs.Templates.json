@@ -98,7 +98,7 @@
       "apiVersion": "[variables('dpsApiVersion')]",
       "copy": {
         "name": "dpscopy",
-        "count": "[length(parameters('count'))]"
+        "count": "[parameters('count')]"
       },
       "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]",
       "location": "[parameters('location')]",
@@ -108,7 +108,7 @@
         "capacity": "[parameters('capacity')]"
       },
       "properties": {
-        "iotHubs": "[reference('iotHubObjectsDeployment').outputs.iotHubObjects]"
+        "iotHubs": "[reference('iotHubObjectsDeployment').outputs.iotHubObjects.value]"
       }
     },
     {
@@ -117,7 +117,7 @@
       "apiVersion": "[variables('diagnosticSettingsApiVersion')]",
       "copy": {
         "name": "dpsdiagnosticscopy",
-        "count": "[length(parameters('count'))]"
+        "count": "[parameters('count')]"
       },
       "name": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()), '/microsoft.insights/DiagnosticSettings')]",
       "dependsOn": [
