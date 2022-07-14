@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "pphadke.Thu.06.30.2022.12.10.55.22",
+  "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceGroup": {
       "type": "string"
@@ -109,19 +109,22 @@
     "dpsDiagnosticSettings": {
       "type": "object",
       "defaultValue": {}
+    },
+    "templateBaseUrl": {
+      "type": "string"
     }
   },
   "variables": {
     "nestedDeploymentApiVersion": "2021-04-01",
     "startIndex": "[add(length(parameters('existingIoTHubNames')), 1)]",
-    "iotHubsRelativePath": "[concat('IoTHubs.Templates.json')]",
-    "iotHubsKeysRelativePath": "[concat('IoTHubAddKeys.Templates.json')]",
-    "dpsRelativePath": "[concat('DPSs.Templates.json')]",
-    "dpsKeysRelativePath": "[concat('DPSAddKeys.Templates.json')]"
-    // "iotHubsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/IoTHub.Templates.json')]",
-    // "iotHubsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/IoTHubAddKeys.Templates.json')]",
-    // "dpsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/DPS.Templates.json')]",
-    // "dpsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/DPSAddKeys.Templates.json')]"
+    // "iotHubsRelativePath": "[concat('IoTHubs.Templates.json')]",
+    // "iotHubsKeysRelativePath": "[concat('IoTHubAddKeys.Templates.json')]",
+    // "dpsRelativePath": "[concat('DPSs.Templates.json')]",
+    // "dpsKeysRelativePath": "[concat('DPSAddKeys.Templates.json')]"
+    "iotHubsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/templates/IoTHubs.Templates.json')]",
+    "iotHubsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/templates/IoTHubAddKeys.Templates.json')]",
+    "dpsTemplateUrl": "[concat(parameters('templateBaseUrl'), '/templates/DPSs.Templates.json')]",
+    "dpsKeysTemplateUrl": "[concat(parameters('templateBaseUrl'), '/templates/DPSAddKeys.Templates.json')]"
   },
   "resources": [
     {
@@ -131,8 +134,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          // "uri": "[variables('iotHubsTemplateUrl')]",
-          "relativePath": "[variables('iotHubsRelativePath')]",
+          "uri": "[variables('iotHubsTemplateUrl')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -230,8 +232,6 @@
         }
       }
     },
-
-
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('nestedDeploymentApiVersion')]",
@@ -239,8 +239,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          // "uri": "[variables('iotHubsTemplateUrl')]",
-          "relativePath": "[variables('dpsRelativePath')]",
+          "uri": "[variables('dpsTemplateUrl')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
