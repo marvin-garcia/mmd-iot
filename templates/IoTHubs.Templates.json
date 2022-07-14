@@ -255,7 +255,7 @@
         "input": "[concat(parameters('namePrefix'), add(parameters('startIndex'), copyIndex()))]"
       }
     },
-    "iotHubresourceIds": {
+    "iotHubResourceIds": {
       "type": "array",
       "copy": {
         "count": "[parameters('count')]",

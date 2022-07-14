@@ -88,5 +88,13 @@
       }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "dpsResourceIds": {
+      "type": "array",
+      "copy": {
+        "count": "[length(parameters('names'))]",
+        "input": "[resourceId('Microsoft.Devices/ProvisioningServices', parameters('names')[copyIndex()])]"
+      }
+    }
+  }
 }
