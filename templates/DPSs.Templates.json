@@ -20,22 +20,25 @@
     "capacity": {
       "type": "int"
     },
-    "iotHubNames": {
+    "iotHubObjects": {
       "type": "array"
     },
-    "iotHubKeyName": {
-      "type": "string",
-      "defaultValue": "iothubowner"
-    },
-    "iotHubSuffix": {
-      "type": "string",
-      "allowedValues": [
-        ".azure-devices.net",
-        ".azure-devices.us",
-        ".azure-devices.cn"
-      ],
-      "defaultValue": ".azure-devices.net"
-    },
+    // "iotHubNames": {
+    //   "type": "array"
+    // },
+    // "iotHubKeyName": {
+    //   "type": "string",
+    //   "defaultValue": "iothubowner"
+    // },
+    // "iotHubSuffix": {
+    //   "type": "string",
+    //   "allowedValues": [
+    //     ".azure-devices.net",
+    //     ".azure-devices.us",
+    //     ".azure-devices.cn"
+    //   ],
+    //   "defaultValue": ".azure-devices.net"
+    // },
     "envName": {
       "type": "string"
     },
@@ -66,32 +69,32 @@
     }
   },
   "resources": [
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('nestedDeploymentApiVersion')]",
-      "name": "iotHubObjectsDeployment",
-      "properties": {
-        "mode": "Incremental",
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "resources": [],
-          "outputs": {
-            "iotHubObjects": {
-              "type": "array",
-              "copy": {
-                "count": "[length(parameters('iotHubNames'))]",
-                "input": {
-                  // "name": "[concat(parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'))]",
-                  "connectionString": "[concat('HostName=',  parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubNames')[copyIndex()], parameters('iotHubKeyName')), '2020-03-01').primaryKey)]",
-                  "location": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('iotHubNames')[copyIndex()]), variables('iotHubApiVersion'), 'Full').location]"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
+    // {
+    //   "type": "Microsoft.Resources/deployments",
+    //   "apiVersion": "[variables('nestedDeploymentApiVersion')]",
+    //   "name": "iotHubObjectsDeployment",
+    //   "properties": {
+    //     "mode": "Incremental",
+    //     "template": {
+    //       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    //       "contentVersion": "1.0.0.0",
+    //       "resources": [],
+    //       "outputs": {
+    //         "iotHubObjects": {
+    //           "type": "array",
+    //           "copy": {
+    //             "count": "[length(parameters('iotHubNames'))]",
+    //             "input": {
+    //               // "name": "[concat(parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'))]",
+    //               "connectionString": "[concat('HostName=',  parameters('iotHubNames')[copyIndex()], parameters('iotHubSuffix'), ';SharedAccessKeyName=', parameters('iotHubKeyName'), ';SharedAccessKey=', listkeys(resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubNames')[copyIndex()], parameters('iotHubKeyName')), '2020-03-01').primaryKey)]",
+    //               "location": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('iotHubNames')[copyIndex()]), variables('iotHubApiVersion'), 'Full').location]"
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
     {
       "type": "Microsoft.Devices/provisioningServices",
       "apiVersion": "[variables('dpsApiVersion')]",
@@ -107,7 +110,8 @@
         "capacity": "[parameters('capacity')]"
       },
       "properties": {
-        "iotHubs": "[reference('iotHubObjectsDeployment').outputs.iotHubObjects.value]"
+        // "iotHubs": "[reference('iotHubObjectsDeployment').outputs.iotHubObjects.value]"
+        "iotHubs": "[parameters('iotHubObjects')]"
       }
     },
     {
