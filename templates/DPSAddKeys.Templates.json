@@ -12,7 +12,7 @@
       "type": "string",
       "defaultValue": "[resourceGroup().location]"
     },
-    "keyType": {
+    "keyName": {
       "type": "string"
     },
     "keyVaultName": {
@@ -93,7 +93,7 @@
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('ownerPrimaryKeyTags'))]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).primaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyName')), variables('dpsApiVersion')).primaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
@@ -107,7 +107,7 @@
       "location": "[parameters('location')]",
       "tags": "[variables('ownerSecondaryKeyTags')]",
       "properties": {
-        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).secondaryKey]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyName')), variables('dpsApiVersion')).secondaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
@@ -121,7 +121,7 @@
       "location": "[parameters('location')]",
       "tags": "[variables('ownerSecondaryConnectionStringTags')]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).secondaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyName')), variables('dpsApiVersion')).secondaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
@@ -134,7 +134,7 @@
       "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-OwnerPrimaryConnectionString')]",
       "location": "[parameters('location')]",
       "properties": {
-        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyType')), variables('dpsApiVersion')).primaryKey)]",
+        "value": "[concat('HostName=', parameters('name'), parameters('dpsSuffix'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/ProvisioningServices/keys', parameters('name'), parameters('keyName')), variables('dpsApiVersion')).primaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
@@ -149,7 +149,7 @@
       "location": "[parameters('location')]",
       "tags": "[variables('idScopeTags')]",
       "properties": {
-        "value": "[reference(resourceId('Microsoft.Devices/ProvisioningServices', parameters('name')), variables('dpsApiVersion'), 'Full').idScope]",
+        "value": "[reference(resourceId('Microsoft.Devices/ProvisioningServices', parameters('name')), variables('dpsApiVersion'), 'Full').properties.idScope]",
         "attributes": {
           "enabled": true
         }

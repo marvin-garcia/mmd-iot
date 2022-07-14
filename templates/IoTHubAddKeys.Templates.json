@@ -15,7 +15,7 @@
     "iotEndpoint": {
       "type": "string"
     },
-    "keyType": {
+    "keyName": {
       "type": "string"
     },
     "keyVaultName": {
@@ -44,11 +44,11 @@
     "iotHubApiVersion": "2021-07-02",
     "keyVaultApiVersion": "2015-06-01",
 
-    "primaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).primaryKey]",
-    "primaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', variables('primaryKey'))]",
+    "primaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).primaryKey]",
+    "primaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', variables('primaryKey'))]",
 
-    "secondaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyType')), variables('iotHubApiVersion')).secondaryKey]",
-    "secondaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyType'), ';SharedAccessKey=', variables('secondaryKey'))]",
+    "secondaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).secondaryKey]",
+    "secondaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', variables('secondaryKey'))]",
 
     "commonTags": {
       "Stamp": "[parameters('stampName')]",
@@ -90,7 +90,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "[variables('keyVaultApiVersion')]",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-PrimaryKey')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyName'), '-PrimaryKey')]",
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('primaryKeyTags'))]",
       "properties": {
@@ -104,7 +104,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "[variables('keyVaultApiVersion')]",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-SecondaryKey')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyName'), '-SecondaryKey')]",
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('secondaryKeyTags'))]",
       "properties": {
@@ -118,7 +118,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "[variables('keyVaultApiVersion')]",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-PrimaryConnectionString')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyName'), '-PrimaryConnectionString')]",
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('primaryConnectionStringTags'))]",
       "properties": {
@@ -132,7 +132,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "[variables('keyVaultApiVersion')]",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyType'), '-SecondaryConnectionString')]",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('name'), '-', parameters('keyName'), '-SecondaryConnectionString')]",
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('secondaryConnectionStringTags'))]",
       "properties": {
