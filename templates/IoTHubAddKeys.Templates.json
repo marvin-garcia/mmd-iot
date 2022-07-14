@@ -44,12 +44,6 @@
     "iotHubApiVersion": "2021-07-02",
     "keyVaultApiVersion": "2015-06-01",
 
-    "primaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).primaryKey]",
-    "primaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', variables('primaryKey'))]",
-
-    "secondaryKey": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).secondaryKey]",
-    "secondaryConnectionString": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', variables('secondaryKey'))]",
-
     "commonTags": {
       "Stamp": "[parameters('stampName')]",
       "Environment": "[parameters('envName')]",
@@ -94,7 +88,7 @@
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('primaryKeyTags'))]",
       "properties": {
-        "value": "[variables('primaryKey')]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).primaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
@@ -108,7 +102,7 @@
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('secondaryKeyTags'))]",
       "properties": {
-        "value": "[variables('secondaryKey')]",
+        "value": "[listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).secondaryKey]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
@@ -122,7 +116,7 @@
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('primaryConnectionStringTags'))]",
       "properties": {
-        "value": "[variables('primaryConnectionString')]",
+        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).primaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('PrimaryExpiry'))]"
@@ -136,7 +130,7 @@
       "location": "[parameters('location')]",
       "tags": "[union(variables('commonTags'), variables('secondaryConnectionStringTags'))]",
       "properties": {
-        "value": "[variables('secondaryConnectionString')]",
+        "value": "[concat('HostName=', parameters('name'), parameters('iotEndpoint'), ';SharedAccessKeyName=', parameters('keyName'), ';SharedAccessKey=', listkeys(resourceId(parameters('resourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('name'), parameters('keyName')), variables('iotHubApiVersion')).secondaryKey)]",
         "attributes": {
           "enabled": true,
           "exp": "[int(parameters('SecondaryExpiry'))]"
